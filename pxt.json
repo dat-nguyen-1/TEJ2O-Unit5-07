@@ -1,5 +1,5 @@
 {
-    "name": "TEJ2O ⇢ Unit #X-YY",
+    "name": "TEJ2O ⇢ Unit #5-07",
     "description": "",
     "dependencies": {
         "core": "*",
@@ -13,7 +13,7 @@
         "README.md"
     ],
     "targetVersions": {
-        "target": "8.0.18",
+        "target": "8.0.22",
         "targetId": "microbit"
     },
     "supportedTargets": [
