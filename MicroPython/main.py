@@ -18,40 +18,6 @@ MODE_1 = 0x00
 MODE_2 = 0x01
 
 
-def init_PCA9685():
-    i2c.init(sda=pin20, scl=pin19)
-    set_frequency(50)
-
-    for index in range(16):
-        set_PWM(index, 0, 0)
-
-    i2c.write(PCA9685_ADDR, 0x00, 0x00)
-
-
-def set_frequency(frequency: int):
-    pre_scale_value = 25_000_000 / (frequency * 4096)
-    pre_scale_value -= 1
-
-    old_mode = i2c.read(PCA9685_ADDR, 0x00)
-    new_mode = (old_mode & 0x7f) | 0x10
-
-    i2c.write(PCA9685_ADDR, 0x00, new_mode)
-    i2c.write(PCA9685_ADDR, 0xFE, pre_scale_value)
-    i2c.write(PCA9685_ADDR, 0x00, old_mode)
-    utime.sleep_us(5000)
-    i2c.write(PCA9685_ADDR, 0x00, old_mode | 0xa1)
-
-
-def set_PWM(channel: int, on: int, off: int):
-    buffer = bytes([
-        0x06 + 4 * channel,
-        on & 0xff,
-        (on >> 8) & 0xFF,
-        off & 0xFF,
-        (off >> 8) & 0xFF,
-    ])
-
-    i2c.write(PCA9685_ADDR, buffer)
 
 
 class HCSR04:
@@ -80,7 +46,7 @@ class HCSR04:
         return distance_cm
 
 
-class Stepper28BYJ48:
+class Driver28BYJ48:
     HALF_STEPS_PER_REV = 4096
     HALF_STEP_SEQUENCE = [
         [1, 1, 0, 0],
@@ -96,34 +62,87 @@ class Stepper28BYJ48:
     def __init__(self, index: int) -> None:
         self.step_index = 0
 
-    def set_stepper(self, index: int, direction: int):
+    def init_PCA9685(self) -> None:
+        i2c.init(sda=pin20, scl=pin19)
+        self.set_frequency(50)
+
+        for index in range(16):
+            self.set_PWM(index, 0, 0)
+
+        i2c.write(PCA9685_ADDR, 0x00, 0x00)
+
+
+    def set_frequency(self, frequency: int) -> None:
+        pre_scale_value = 25_000_000 / (frequency * 4096)
+        pre_scale_value -= 1
+
+        old_mode = i2c.read(PCA9685_ADDR, 0x00)
+        new_mode = (old_mode & 0x7f) | 0x10
+
+        i2c.write(PCA9685_ADDR, 0x00, new_mode)
+        i2c.write(PCA9685_ADDR, 0xFE, pre_scale_value)
+        i2c.write(PCA9685_ADDR, 0x00, old_mode)
+        utime.sleep_us(5000)
+        i2c.write(PCA9685_ADDR, 0x00, old_mode | 0xa1)
+
+
+    def set_PWM(self, channel: int, on: int, off: int) -> None:
+        buffer = bytes([
+            0x06 + 4 * channel,
+            on & 0xff,
+            (on >> 8) & 0xFF,
+            off & 0xFF,
+            (off >> 8) & 0xFF,
+        ])
+
+        i2c.write(PCA9685_ADDR, buffer)
+
+    def set_stepper(self, index: int, direction: int) -> None:
         if index == 1:
             if direction == 1:
-                set_PWM(0, 2047, 4095)
-                set_PWM(2, 1, 2047)
-                set_PWM(1, 1023, 3071)
-                set_PWM(3, 3071, 1023)
+                self.set_PWM(0, 2047, 4095)
+                self.set_PWM(2, 1, 2047)
+                self.set_PWM(1, 1023, 3071)
+                self.set_PWM(3, 3071, 1023)
+            else:
+                self.set_PWM(3, 2047, 4095)
+                self.set_PWM(1, 1, 2047)
+                self.set_PWM(2, 1023, 3071)
+                self.set_PWM(0, 3071, 1023)
+        else:
+            if direction == 1:
+                self.set_PWM(4, 2047, 4095)
+                self.set_PWM(6, 1, 2047)
+                self.set_PWM(5, 1023, 3071)
+                self.set_PWM(7, 3071, 1023)
+            else:
+                self.set_PWM(7, 2047, 4095)
+                self.set_PWM(5, 1, 2047)
+                self.set_PWM(6, 1023, 3071)
+                self.set_PWM(4, 3071, 1023)
             
 
-    def step(self, direction: int, delay_ms: int = 1) -> None:
-        current_step = self.HALF_STEP_SEQUENCE[self.step_index]
-        for index in range(4):
-            self.pins[index].write_digital(current_step[index])
-
-        self.step_index = (self.step_index + direction) % 8
-        sleep(delay_ms)
-
-    def turn_degrees(self, degrees: int, delay_ms: int = 1) -> None:
+    def stepper_degree(self, index: int, degrees: int) -> None:
         if degrees > 0:
-            direction = 1
+            self.set_stepper(index, 1)
         else:
-            direction = -1
+            self.set_stepper(index, -1)
 
-        abs_degrees = abs(degrees)
-        steps = int(abs_degrees / 360 * self.HALF_STEPS_PER_REV)
+        degrees = abs(degrees)
+        utime.sleep_ms(degrees * 10240 / 360)
 
-        for _ in range(steps):
-            self.step(direction, delay_ms)
+        self.stop_all_steppers()
+
+    def stepper_on(self, index: int, direction: int) -> None:
+        self.set_stepper(index, direction)
+
+    def stop_all_steppers(self) -> None:
+        for index in range(2):
+            self.stepper_off(index)
+
+    def stepper_off(self, index: int) -> None:
+        self.set_PWM(index * 2, 0, 0)
+        self.set_PWM(index * 2 + 1, 0, 0)
 
     def turn_cm(
         self, distance: int, wheel_diameter: int = 1, delay_ms: int = 1
