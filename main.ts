@@ -6,7 +6,7 @@
 */
 
 // constants
-const WHEEL_DIAMETER: number = 50
+const WHEEL_DIAMETER: number = 20
 const TRACK: number = 100
 
 // intiialize variables
