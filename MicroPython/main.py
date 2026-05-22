@@ -76,10 +76,13 @@ class Stepper28BYJ48:
         for _ in range(steps):
             self.step(direction, delay_ms)
 
-    def turn_cm(self, distance: int, wheel_diameter: int = 1, delay_ms: int = 1) -> None:
+    def turn_cm(
+        self, distance: int, wheel_diameter: int = 1, delay_ms: int = 1
+    ) -> None:
+
         circumference = math.pi * wheel_diameter
         degrees = int((distance * 360) / circumference)
-        
+
         self.turn_degrees(degrees, delay_ms)
 
 
