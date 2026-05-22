@@ -88,26 +88,31 @@ class Stepper28BYJ48:
 
 class StepperCar:
     def __init__(
-        self, stepper_1: Stepper28BYJ48, stepper_2: Stepper28BYJ48, track: float, wheel_diameter: float
+        self,
+        stepper_left: Stepper28BYJ48,
+        stepper_right: Stepper28BYJ48,
+        track: float,
+        wheel_diameter: float,
     ) -> None:
-        self.stepper_1 = stepper_1
-        self.stepper_2 = stepper_2
+
+        self.stepper_left = stepper_left
+        self.stepper_right = stepper_right
         self.track = track
         self.wheel_diameter = wheel_diameter
 
     def step(delay_ms: int = 1) -> None:
-        self.stepper_1.step(1)
-        self.stepper_2.step(-1)
+        self.stepper_left.step(1)
+        self.stepper_right.step(-1)
 
     def move_cm(cm, delay_ms: int = 1) -> None:
-        self.stepper_1.turn_cm(cm)
-        self.stepper_2.turn_cm(-cm)
+        self.stepper_left.turn_cm(cm)
+        self.stepper_right.turn_cm(-cm)
 
     def turn_degrees(degrees, delay_ms: int = 1) -> None:
         target_wheel_degrees = int((TRACK * 90) / WHEEL_DIAMETER)
 
-        self.stepper_1.turn_degrees(-target_wheel_degrees)
-        self.stepper_2.turn_degrees(-target_wheel_degrees)
+        self.stepper_left.turn_degrees(-target_wheel_degrees)
+        self.stepper_right.turn_degrees(-target_wheel_degrees)
 
 
 # constants
