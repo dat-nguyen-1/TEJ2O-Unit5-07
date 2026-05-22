@@ -13,6 +13,47 @@ import utime
 display.off()
 
 
+PCA9685_ADDR = 0x40
+MODE_1 = 0x00
+MODE_2 = 0x01
+
+
+def init_PCA9685():
+    i2c.init(sda=pin20, scl=pin19)
+    set_frequency(50)
+
+    for index in range(16):
+        set_PWM(index, 0, 0)
+
+    i2c.write(PCA9685_ADDR, 0x00, 0x00)
+
+
+def set_frequency(frequency: int):
+    pre_scale_value = 25_000_000 / (frequency * 4096)
+    pre_scale_value -= 1
+
+    old_mode = i2c.read(PCA9685_ADDR, 0x00)
+    new_mode = (old_mode & 0x7f) | 0x10
+
+    i2c.write(PCA9685_ADDR, 0x00, new_mode)
+    i2c.write(PCA9685_ADDR, 0xFE, pre_scale_value)
+    i2c.write(PCA9685_ADDR, 0x00, old_mode)
+    utime.sleep_us(5000)
+    i2c.write(PCA9685_ADDR, 0x00, old_mode | 0xa1)
+
+
+def set_PWM(channel: int, on: int, off: int):
+    buffer = bytes([
+        0x06 + 4 * channel,
+        on & 0xff,
+        (on >> 8) & 0xFF,
+        off & 0xFF,
+        (off >> 8) & 0xFF,
+    ])
+
+    i2c.write(PCA9685_ADDR, buffer)
+
+
 class HCSR04:
     def __init__(self, trigger=pin1, echo=pin2) -> None:
         self.trigger = trigger
@@ -52,9 +93,17 @@ class Stepper28BYJ48:
         [1, 0, 0, 0],
     ]
 
-    def __init__(self, in1=pin0, in2=pin1, in3=pin2, in4=pin8) -> None:
-        self.pins = [in1, in2, in3, in4]
+    def __init__(self, index: int) -> None:
         self.step_index = 0
+
+    def set_stepper(self, index: int, direction: int):
+        if index == 1:
+            if direction == 1:
+                set_PWM(0, 2047, 4095)
+                set_PWM(2, 1, 2047)
+                set_PWM(1, 1023, 3071)
+                set_PWM(3, 3071, 1023)
+            
 
     def step(self, direction: int, delay_ms: int = 1) -> None:
         current_step = self.HALF_STEP_SEQUENCE[self.step_index]
