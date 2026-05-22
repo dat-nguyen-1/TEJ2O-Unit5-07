@@ -9,9 +9,9 @@ from machine import time_pulse_us
 import math
 import utime
 
-
 # turn off display for more pins
 display.off()
+
 
 class HCSR04:
     def __init__(self, trigger=pin1, echo=pin2) -> None:
@@ -21,19 +21,19 @@ class HCSR04:
         # initialize pins
         self.trigger.write_digital(0)
         self.echo.read_digital()
-        
+
     def get_distance_cm(self) -> float:
         self.trigger.write_digital(0)
         utime.sleep_us(2)
         self.trigger.write_digital(1)
         utime.sleep_us(10)
         self.trigger.write_digital(0)
-        
+
         time_us = time_pulse_us(self.echo, 1)
 
         if time_us <= 0:
             return -1
-        
+
         distance_cm = time_us * 0.5 * 0.0343
 
         return distance_cm
@@ -60,10 +60,10 @@ class Stepper28BYJ48:
         current_step = self.HALF_STEP_SEQUENCE[self.step_index]
         for index in range(4):
             self.pins[index].write_digital(current_step[index])
-        
+
         self.step_index = (self.step_index + direction) % 8
         sleep(delay_ms)
-    
+
     def turn_degrees(self, degrees: int, delay_ms: int = 1) -> None:
         if degrees > 0:
             direction = 1
@@ -72,7 +72,7 @@ class Stepper28BYJ48:
 
         abs_degrees = abs(degrees)
         steps = int(abs_degrees / 360 * self.HALF_STEPS_PER_REV)
-        
+
         for _ in range(steps):
             self.step(direction, delay_ms)
 
