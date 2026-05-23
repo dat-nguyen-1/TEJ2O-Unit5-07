@@ -12,24 +12,26 @@ const TRACK: number = 100
 // intiialize variables
 let distance: number = 0
 
+robotbit.MotorStopAll()
+
 input.onButtonPressed(Button.A, function() {
     // forever loop
     while (true) {
         // get distance
         distance = sonar.ping(
-            DigitalPin.P0, 
             DigitalPin.P1, 
+            DigitalPin.P2, 
             PingUnit.Centimeters
         )
 
         // distance within 10 cm
-        if (distance <= 10) {
+        if (distance <= 10 && distance > 0) {
             // move back 10 cm and turn 90 degrees
-            robotbit.StpCarMove(10, WHEEL_DIAMETER)
+            robotbit.StpCarMove(-10, WHEEL_DIAMETER)
             robotbit.StpCarTurn(90, WHEEL_DIAMETER, TRACK)
         } else {
             // turn motors forward 10 degrees
-            robotbit.StepperDual(10, 10)
+            robotbit.StpCarMove(2, WHEEL_DIAMETER)
         }
     }
 })
