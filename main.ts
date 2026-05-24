@@ -6,7 +6,7 @@
 */
 
 // constants
-const WHEEL_DIAMETER: number = 20
+const WHEEL_DIAMETER: number = 60
 const TRACK: number = 100
 
 // intiialize variables
@@ -30,8 +30,8 @@ input.onButtonPressed(Button.A, function() {
             robotbit.StpCarMove(-10, WHEEL_DIAMETER)
             robotbit.StpCarTurn(90, WHEEL_DIAMETER, TRACK)
         } else {
-            // turn motors forward 10 degrees
-            robotbit.StpCarMove(2, WHEEL_DIAMETER)
+            // turn motors forward
+            robotbit.StpCarMove(1, WHEEL_DIAMETER)
         }
     }
 })
