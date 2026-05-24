@@ -9,7 +9,6 @@ from machine import time_pulse_us
 import math
 import utime
 
-
 PCA9685_ADDR = 0x40
 MODE_1 = 0x00
 MODE_2 = 0x01
@@ -79,13 +78,15 @@ class Driver28BYJ48:
         i2c.write(PCA9685_ADDR, bytes([regular, value]))
 
     def write_PWM(self, channel: int, on: int, off: int) -> None:
-        buffer = bytes([
-            0x06 + 4 * channel,
-            on & 0xff,
-            on >> 8,
-            off & 0xFF,
-            off >> 8,
-        ])
+        buffer = bytes(
+            [
+                0x06 + 4 * channel,
+                on & 0xff,
+                on >> 8,
+                off & 0xFF,
+                off >> 8,
+            ]
+        )
 
         i2c.write(PCA9685_ADDR, buffer)
 
@@ -99,9 +100,9 @@ class Driver28BYJ48:
 
     def step(self, index: int, direction: int) -> None:
         base = index * 4
-        self.step_index[index] = (
-            self.step_index[index] + direction
-        ) % len(self.HALF_STEP_SEQUENCE)
+        self.step_index[index] = (self.step_index[index] + direction) % len(
+            self.HALF_STEP_SEQUENCE
+        )
 
         self.set_step(base, self.step_index[index])
 
@@ -109,7 +110,7 @@ class Driver28BYJ48:
 
     def step_all(self, directions: list[int]) -> None:
         for index, direction in enumerate(directions):
-            self.step(index, direction)
+            self.step(index, -direction)
 
     def stop(self, index: int) -> None:
         base = index * 4
@@ -175,4 +176,3 @@ while True:
     else:
         # move forward
         STEPPER_DRIVER.step_all([1, 1])
-
