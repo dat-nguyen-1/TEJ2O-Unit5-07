@@ -81,7 +81,7 @@ class Driver28BYJ48:
         buffer = bytes(
             [
                 0x06 + 4 * channel,
-                on & 0xff,
+                on & 0xFF,
                 on >> 8,
                 off & 0xFF,
                 off >> 8,
