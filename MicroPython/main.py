@@ -164,9 +164,8 @@ SONAR = HCSR04(trigger=pin1, echo=pin2)
 while True:
     # get distance
     distance_cm = SONAR.get_distance_cm()
-    print(distance_cm)
 
-    if -1 < distance_cm <= 10:
+    if distance_cm <= 10 and distance_cm > -1:
         # turn wheels backwards 10 cm
         STEPPER_DRIVER.stop_all()
         STEPPER_DRIVER.move_cm(-10, WHEEL_DIAMETER)
