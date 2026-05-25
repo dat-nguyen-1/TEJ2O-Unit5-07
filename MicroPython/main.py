@@ -55,7 +55,7 @@ class Driver28BYJ48:
         self.is_on = [False, False]
         self.target_time = [0, 0]
         self.step_index = [0, 0]
-        self.delay = 5000
+        self.delay = 1000
         self.init_PCA9685()
 
     def init_PCA9685(self) -> None:
@@ -148,12 +148,12 @@ class Driver28BYJ48:
             else:
                 direction = -1
 
-            self.step_all([direction, -direction])
+            self.step_all([-direction, direction])
 
 
 # constants
-TRACK = 20
-WHEEL_DIAMETER = 6
+TRACK = 5
+WHEEL_DIAMETER = 10
 
 # initialize hardware instances
 STEPPER_DRIVER = Driver28BYJ48()
@@ -171,5 +171,6 @@ while True:
         # rotate 90 degrees in place
         STEPPER_DRIVER.turn_degrees(90, WHEEL_DIAMETER, TRACK)
     else:
-        # move forward
-        STEPPER_DRIVER.step_all([1, 1])
+        # move forward 1 cm
+        STEPPER_DRIVER.move_cm(1, WHEEL_DIAMETER)
+        
