@@ -10,8 +10,6 @@ import math
 import utime
 
 PCA9685_ADDR = 0x40
-MODE_1 = 0x00
-MODE_2 = 0x01
 
 
 class HCSR04:
