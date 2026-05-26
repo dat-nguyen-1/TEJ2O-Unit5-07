@@ -173,4 +173,3 @@ while True:
     else:
         # move forward 1 cm
         STEPPER_DRIVER.move_cm(1, WHEEL_DIAMETER)
-        
